@@ -1,0 +1,10 @@
+project_id = "kotkxwrxtxhuzlvfjweb"
+
+[functions.generate-session-token]
+verify_jwt = false
+
+[functions.submit-attendance]
+verify_jwt = false
+
+[functions.export-attendance]
+verify_jwt = false
