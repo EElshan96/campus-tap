@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -13,22 +13,32 @@ export default function TeacherLogin() {
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { user, signIn, signUp, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!authLoading && user) navigate('/teacher/dashboard');
+  }, [user, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = isSignUp ? await signUp(email, password) : await signIn(email, password);
-
-    if (error) {
-      toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    } else if (isSignUp) {
-      toast({ title: 'Account created', description: 'Please check your email to verify your account.' });
+    if (isSignUp) {
+      const { error } = await signUp(email, password);
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      } else {
+        toast({ title: 'Account created', description: 'Please check your email to verify your account, then sign in.' });
+      }
     } else {
-      navigate('/teacher/dashboard');
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+      } else {
+        navigate('/teacher/dashboard');
+      }
     }
     setLoading(false);
   };
