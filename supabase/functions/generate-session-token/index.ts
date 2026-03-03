@@ -20,8 +20,6 @@ async function signToken(payload: Record<string, unknown>, secret: string): Prom
   const key = await crypto.subtle.importKey(
     "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
-  const sig = await crypto.subtle.sign("HMAC", enc.encode(data), key);
-  // Fix: sign with the actual key
   const signature = await crypto.subtle.sign("HMAC", key, enc.encode(data));
   return `${data}.${base64url(signature)}`;
 }
@@ -43,10 +41,9 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { session_id } = await req.json();
