@@ -15,6 +15,7 @@ interface AttendanceRecord {
   student_name: string | null;
   submitted_at: string;
   on_class_network: boolean | null;
+  ip_address: string | null;
 }
 
 export default function TeacherSession() {
@@ -250,6 +251,9 @@ export default function TeacherSession() {
                         <p className="font-medium text-sm text-foreground">{a.student_id}</p>
                         {a.student_name && (
                           <p className="text-xs text-muted-foreground">{a.student_name}</p>
+                        )}
+                        {a.ip_address && (
+                          <p className="text-xs text-muted-foreground font-mono">{a.ip_address}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2">

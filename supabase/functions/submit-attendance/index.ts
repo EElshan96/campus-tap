@@ -175,6 +175,7 @@ serve(async (req) => {
         student_name: cleanName,
         on_class_network: onClassNetwork,
         user_agent_hash: userAgentHash,
+        ip_address: clientIp,
       });
 
     if (insertError) {
