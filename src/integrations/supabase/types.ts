@@ -17,6 +17,7 @@ export type Database = {
       attendance: {
         Row: {
           id: string
+          ip_address: string | null
           on_class_network: boolean | null
           session_id: string
           student_id: string
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          ip_address?: string | null
           on_class_network?: boolean | null
           session_id: string
           student_id: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          ip_address?: string | null
           on_class_network?: boolean | null
           session_id?: string
           student_id?: string
