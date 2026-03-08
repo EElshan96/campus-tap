@@ -174,8 +174,8 @@ export default function TeacherDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={() => startAttendance(cls.id)} className="w-full">
-                    <QrCode className="mr-2 h-4 w-4" /> Start Attendance
+                  <Button onClick={() => openCourse(cls.id)} className="w-full">
+                    <QrCode className="mr-2 h-4 w-4" /> View Sessions
                   </Button>
                 </CardContent>
               </Card>
