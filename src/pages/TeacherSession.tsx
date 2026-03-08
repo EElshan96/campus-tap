@@ -29,6 +29,7 @@ export default function TeacherSession() {
   const [loading, setLoading] = useState(true);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [className, setClassName] = useState('');
+  const [sessionName, setSessionName] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/teacher/login');
