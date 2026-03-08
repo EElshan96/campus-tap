@@ -153,13 +153,8 @@ serve(async (req) => {
                      req.headers.get('x-real-ip') || 'unknown';
     
     let onClassNetwork = false;
-    // Simple CIDR check (basic implementation)
-    if (session.allowed_cidrs && session.allowed_cidrs.length > 0) {
-      // For MVP, just check if IP starts with any of the configured prefixes
-      onClassNetwork = session.allowed_cidrs.some((cidr: string) => {
-        const prefix = cidr.split('/')[0].split('.').slice(0, -1).join('.');
-        return clientIp.startsWith(prefix);
-      });
+    if (session.allowed_cidrs && session.allowed_cidrs.length > 0 && clientIp !== 'unknown') {
+      onClassNetwork = session.allowed_cidrs.some((cidr: string) => ipInCidr(clientIp, cidr));
     }
 
     // Hash user agent
