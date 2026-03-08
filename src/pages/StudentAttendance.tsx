@@ -10,9 +10,10 @@ import { motion } from 'framer-motion';
 export default function StudentAttendance() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [vunetId, setVunetId] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const isDemo = token === 'demo';
+  const [vunetId, setVunetId] = useState(isDemo ? 'abc123' : '');
+  const [firstName, setFirstName] = useState(isDemo ? 'Jane' : '');
+  const [lastName, setLastName] = useState(isDemo ? 'Doe' : '');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string; onNetwork?: boolean } | null>(null);
 
@@ -21,6 +22,14 @@ export default function StudentAttendance() {
     if (!token || !vunetId.trim() || !firstName.trim() || !lastName.trim()) return;
     setSubmitting(true);
     setResult(null);
+
+    // Demo mode: simulate success after a short delay
+    if (isDemo) {
+      await new Promise(r => setTimeout(r, 1200));
+      setSubmitting(false);
+      setResult({ success: true, message: 'Attendance recorded successfully (demo)', onNetwork: true });
+      return;
+    }
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
