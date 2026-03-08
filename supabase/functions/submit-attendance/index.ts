@@ -6,6 +6,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function ipToInt(ip: string): number {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+}
+
+function ipInCidr(ip: string, cidr: string): boolean {
+  const [network, prefixStr] = cidr.split('/');
+  const prefix = parseInt(prefixStr, 10);
+  if (isNaN(prefix) || prefix < 0 || prefix > 32) return false;
+  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
+  return (ipToInt(ip) & mask) === (ipToInt(network) & mask);
+}
+
 function base64urlDecode(str: string): Uint8Array {
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   while (str.length % 4) str += '=';
@@ -153,13 +165,8 @@ serve(async (req) => {
                      req.headers.get('x-real-ip') || 'unknown';
     
     let onClassNetwork = false;
-    // Simple CIDR check (basic implementation)
-    if (session.allowed_cidrs && session.allowed_cidrs.length > 0) {
-      // For MVP, just check if IP starts with any of the configured prefixes
-      onClassNetwork = session.allowed_cidrs.some((cidr: string) => {
-        const prefix = cidr.split('/')[0].split('.').slice(0, -1).join('.');
-        return clientIp.startsWith(prefix);
-      });
+    if (session.allowed_cidrs && session.allowed_cidrs.length > 0 && clientIp !== 'unknown') {
+      onClassNetwork = session.allowed_cidrs.some((cidr: string) => ipInCidr(clientIp, cidr));
     }
 
     // Hash user agent
