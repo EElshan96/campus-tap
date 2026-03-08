@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
+import {
+  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -15,13 +18,23 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
+interface AttendanceRecord {
+  id: string;
+  student_id: string;
+  student_name: string | null;
+  submitted_at: string;
+  on_class_network: boolean | null;
+  ip_address: string | null;
+}
+
 interface SessionItem {
   id: string;
   name: string | null;
   starts_at: string;
   ends_at: string | null;
   created_at: string;
-  attendance_count?: number;
+  attendance_count: number;
+  on_campus_count: number;
 }
 
 export default function TeacherCourse() {
@@ -36,6 +49,9 @@ export default function TeacherCourse() {
   const [newSessionName, setNewSessionName] = useState('');
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [expandedSession, setExpandedSession] = useState<string | null>(null);
+  const [attendanceRecords, setAttendanceRecords] = useState<Record<string, AttendanceRecord[]>>({});
+  const [loadingAttendance, setLoadingAttendance] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/teacher/login');
@@ -65,19 +81,45 @@ export default function TeacherCourse() {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      // Fetch attendance counts for each session
-      const sessionsWithCounts = await Promise.all(
+      const sessionsWithStats = await Promise.all(
         data.map(async (s) => {
-          const { count } = await supabase
+          const { data: attendanceData } = await supabase
             .from('attendance')
-            .select('*', { count: 'exact', head: true })
+            .select('on_class_network')
             .eq('session_id', s.id);
-          return { ...s, attendance_count: count ?? 0 };
+
+          const total = attendanceData?.length ?? 0;
+          const onCampus = attendanceData?.filter(a => a.on_class_network).length ?? 0;
+
+          return { ...s, attendance_count: total, on_campus_count: onCampus };
         })
       );
-      setSessions(sessionsWithCounts);
+      setSessions(sessionsWithStats);
     }
     setLoading(false);
+  };
+
+  const toggleAttendance = async (sessionId: string) => {
+    if (expandedSession === sessionId) {
+      setExpandedSession(null);
+      return;
+    }
+
+    setExpandedSession(sessionId);
+
+    if (attendanceRecords[sessionId]) return;
+
+    setLoadingAttendance(sessionId);
+    const { data } = await supabase
+      .from('attendance')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('submitted_at', { ascending: true });
+
+    if (data) {
+      setAttendanceRecords(prev => ({ ...prev, [sessionId]: data }));
+    }
+    setLoadingAttendance(null);
   };
 
   const createSession = async () => {
@@ -106,19 +148,22 @@ export default function TeacherCourse() {
     setCreating(false);
   };
 
-  const startSession = async (sessionId: string) => {
-    navigate(`/teacher/session/${sessionId}`);
-  };
-
   const deleteSession = async (sessionId: string) => {
     const { error } = await supabase.from('sessions').delete().eq('id', sessionId);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
+      if (expandedSession === sessionId) setExpandedSession(null);
       fetchSessions();
       toast({ title: 'Session deleted' });
     }
   };
+
+  // Summary stats
+  const totalSessions = sessions.length;
+  const totalCheckins = sessions.reduce((sum, s) => sum + s.attendance_count, 0);
+  const totalOnCampus = sessions.reduce((sum, s) => sum + s.on_campus_count, 0);
+  const overallOnCampusPct = totalCheckins > 0 ? Math.round((totalOnCampus / totalCheckins) * 100) : 0;
 
   if (authLoading || loading) {
     return (
@@ -139,15 +184,43 @@ export default function TeacherCourse() {
             <div>
               <h1 className="text-lg font-bold text-foreground">{className}</h1>
               <p className="text-xs text-muted-foreground">
-                {sessions.length} session{sessions.length !== 1 ? 's' : ''}
+                {totalSessions} session{totalSessions !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="flex items-center justify-between mb-6">
+      <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
+        {/* Summary Stats */}
+        {totalSessions > 0 && (
+          <div className="grid grid-cols-3 gap-4">
+            <Card className="glass-card">
+              <CardContent className="py-4 text-center">
+                <BarChart3 className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
+                <p className="text-xs text-muted-foreground">Sessions</p>
+              </CardContent>
+            </Card>
+            <Card className="glass-card">
+              <CardContent className="py-4 text-center">
+                <Users className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <p className="text-2xl font-bold text-foreground">{totalCheckins}</p>
+                <p className="text-xs text-muted-foreground">Total Check-ins</p>
+              </CardContent>
+            </Card>
+            <Card className="glass-card">
+              <CardContent className="py-4 text-center">
+                <Wifi className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <p className="text-2xl font-bold text-foreground">{overallOnCampusPct}%</p>
+                <p className="text-xs text-muted-foreground">On Campus</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Sessions */}
+        <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">Sessions</h2>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -197,6 +270,12 @@ export default function TeacherCourse() {
           <div className="grid gap-4">
             {sessions.map(s => {
               const isActive = !s.ends_at;
+              const isExpanded = expandedSession === s.id;
+              const onCampusPct = s.attendance_count > 0
+                ? Math.round((s.on_campus_count / s.attendance_count) * 100)
+                : 0;
+              const records = attendanceRecords[s.id];
+
               return (
                 <Card key={s.id} className="glass-card hover:shadow-md transition-shadow">
                   <CardHeader className="pb-2">
@@ -227,15 +306,75 @@ export default function TeacherCourse() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {s.attendance_count ?? 0} student{(s.attendance_count ?? 0) !== 1 ? 's' : ''}
+                        {s.attendance_count} student{s.attendance_count !== 1 ? 's' : ''}
                       </span>
+                      {s.attendance_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Wifi className="h-3 w-3" />
+                          {onCampusPct}% on campus
+                        </span>
+                      )}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button onClick={() => startSession(s.id)} variant={isActive ? 'default' : 'outline'} className="w-full">
-                      <QrCode className="mr-2 h-4 w-4" />
-                      {isActive ? 'Open Session' : 'View Session'}
-                    </Button>
+                  <CardContent className="space-y-3">
+                    <div className="flex gap-2">
+                      <Button onClick={() => navigate(`/teacher/session/${s.id}`)} variant={isActive ? 'default' : 'outline'} className="flex-1">
+                        <QrCode className="mr-2 h-4 w-4" />
+                        {isActive ? 'Open Session' : 'View Session'}
+                      </Button>
+                      {s.attendance_count > 0 && (
+                        <Button variant="ghost" size="icon" onClick={() => toggleAttendance(s.id)}>
+                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </div>
+
+                    {isExpanded && (
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        {loadingAttendance === s.id ? (
+                          <div className="flex justify-center py-6">
+                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : records && records.length > 0 ? (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>VUnet ID</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Time</TableHead>
+                                <TableHead>Network</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {records.map(r => (
+                                <TableRow key={r.id}>
+                                  <TableCell className="font-mono text-sm">{r.student_id}</TableCell>
+                                  <TableCell className="text-sm">{r.student_name || '—'}</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {new Date(r.submitted_at).toLocaleTimeString()}
+                                  </TableCell>
+                                  <TableCell>
+                                    {r.on_class_network ? (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2 py-0.5 text-xs font-medium">
+                                        <Wifi className="h-3 w-3" />
+                                        On Campus
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs font-medium">
+                                        <WifiOff className="h-3 w-3" />
+                                        Off Campus
+                                      </span>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-4">No records found.</p>
+                        )}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
