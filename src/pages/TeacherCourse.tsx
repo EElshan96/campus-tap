@@ -233,8 +233,12 @@ export default function TeacherCourse() {
               </p>
             </div>
           </div>
+          {totalCheckins > 0 && (
+            <Button variant="outline" size="sm" onClick={exportAllCSV}>
+              <Download className="mr-2 h-4 w-4" /> Export All CSV
+            </Button>
+          )}
         </div>
-      </header>
 
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         {/* Summary Stats */}
