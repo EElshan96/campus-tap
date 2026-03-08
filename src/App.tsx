@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherCourse from "./pages/TeacherCourse";
 import TeacherSession from "./pages/TeacherSession";
 import TeacherSettings from "./pages/TeacherSettings";
 import StudentAttendance from "./pages/StudentAttendance";
