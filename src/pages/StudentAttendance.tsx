@@ -109,7 +109,7 @@ export default function StudentAttendance() {
         <Card className="glass-card">
           <CardHeader>
             <CardTitle>Mark Attendance</CardTitle>
-            <CardDescription>Enter your student ID to confirm your presence.</CardDescription>
+            <CardDescription>Enter your VUnet ID and name to confirm your presence.</CardDescription>
           </CardHeader>
           <CardContent>
             {result && !result.success && (
