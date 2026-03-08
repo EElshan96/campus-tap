@@ -67,7 +67,7 @@ serve(async (req) => {
     const { token, student_id, student_name } = await req.json();
 
     if (!token || !student_id) {
-      return new Response(JSON.stringify({ error: 'token and student_id are required' }), { 
+      return new Response(JSON.stringify({ error: 'token and VUnet ID are required' }), { 
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
