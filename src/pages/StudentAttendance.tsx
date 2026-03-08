@@ -9,8 +9,9 @@ import { CheckCircle2, GraduationCap, Loader2, AlertCircle, Wifi, WifiOff } from
 export default function StudentAttendance() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [studentId, setStudentId] = useState('');
-  const [studentName, setStudentName] = useState('');
+  const [vunetId, setVunetId] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string; onNetwork?: boolean } | null>(null);
 
