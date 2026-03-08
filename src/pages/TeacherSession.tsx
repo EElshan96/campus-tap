@@ -46,6 +46,7 @@ export default function TeacherSession() {
         .single();
       if (session) {
         setClassName((session as any).classes?.name || 'Unknown');
+        setSessionName((session as any).name || 'Untitled Session');
         if (session.ends_at) setSessionEnded(true);
       }
       setLoading(false);
