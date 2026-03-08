@@ -70,18 +70,8 @@ export default function TeacherDashboard() {
     if (!error) fetchClasses();
   };
 
-  const startAttendance = async (classId: string) => {
-    const tokenSecret = crypto.randomUUID() + crypto.randomUUID();
-    const { data, error } = await supabase.from('sessions').insert({
-      class_id: classId,
-      token_secret: tokenSecret,
-    }).select().single();
-
-    if (error || !data) {
-      toast({ title: 'Error', description: 'Failed to create session', variant: 'destructive' });
-      return;
-    }
-    navigate(`/teacher/session/${data.id}`);
+  const openCourse = (classId: string) => {
+    navigate(`/teacher/course/${classId}`);
   };
 
   if (authLoading || loading) {
