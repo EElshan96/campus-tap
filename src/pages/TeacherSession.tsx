@@ -258,9 +258,15 @@ export default function TeacherSession() {
                       </div>
                       <div className="flex items-center gap-2">
                         {a.on_class_network ? (
-                          <Wifi className="h-3 w-3 text-success" />
+                          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2 py-0.5 text-xs font-medium">
+                            <Wifi className="h-3 w-3" />
+                            On Campus
+                          </span>
                         ) : (
-                          <WifiOff className="h-3 w-3 text-muted-foreground" />
+                          <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs font-medium">
+                            <WifiOff className="h-3 w-3" />
+                            Off Campus
+                          </span>
                         )}
                         <span className="text-xs text-muted-foreground">
                           {new Date(a.submitted_at).toLocaleTimeString()}
