@@ -10,7 +10,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3,
+  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3, Download,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
