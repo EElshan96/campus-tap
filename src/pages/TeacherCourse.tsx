@@ -10,13 +10,14 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3, Download,
+  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3, Download, BookOpen,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
 
 interface AttendanceRecord {
   id: string;
@@ -162,7 +163,6 @@ export default function TeacherCourse() {
   const exportAllCSV = async () => {
     if (sessions.length === 0) return;
     
-    // Fetch all attendance for all sessions in this course
     const allRecords: { session_name: string; student_id: string; student_name: string; submitted_at: string; on_campus: string; ip_address: string }[] = [];
     
     for (const s of sessions) {
@@ -204,7 +204,6 @@ export default function TeacherCourse() {
     toast({ title: 'CSV exported' });
   };
 
-  // Summary stats
   const totalSessions = sessions.length;
   const totalCheckins = sessions.reduce((sum, s) => sum + s.attendance_count, 0);
   const totalOnCampus = sessions.reduce((sum, s) => sum + s.on_campus_count, 0);
@@ -220,22 +219,26 @@ export default function TeacherCourse() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      {/* Frosted header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/teacher/dashboard')}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate('/teacher/dashboard')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            <div className="w-9 h-9 rounded-xl vu-gradient flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{className}</h1>
-              <p className="text-xs text-muted-foreground">
-                {totalSessions} session{totalSessions !== 1 ? 's' : ''}
+              <h1 className="text-sm font-bold text-foreground leading-tight">{className}</h1>
+              <p className="text-[11px] text-muted-foreground">
+                {totalSessions} session{totalSessions !== 1 ? 's' : ''} · {totalCheckins} check-in{totalCheckins !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
           {totalCheckins > 0 && (
-            <Button variant="outline" size="sm" onClick={exportAllCSV}>
-              <Download className="mr-2 h-4 w-4" /> Export All CSV
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={exportAllCSV}>
+              <Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV
             </Button>
           )}
         </div>
@@ -244,38 +247,49 @@ export default function TeacherCourse() {
       <main className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
         {/* Summary Stats */}
         {totalSessions > 0 && (
-          <div className="grid grid-cols-3 gap-4">
+          <motion.div
+            className="grid grid-cols-3 gap-3"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <Card className="glass-card">
               <CardContent className="py-4 text-center">
-                <BarChart3 className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2">
+                  <BarChart3 className="h-4 w-4 text-accent-foreground" />
+                </div>
                 <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
-                <p className="text-xs text-muted-foreground">Sessions</p>
+                <p className="text-[11px] text-muted-foreground">Sessions</p>
               </CardContent>
             </Card>
             <Card className="glass-card">
               <CardContent className="py-4 text-center">
-                <Users className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2">
+                  <Users className="h-4 w-4 text-accent-foreground" />
+                </div>
                 <p className="text-2xl font-bold text-foreground">{totalCheckins}</p>
-                <p className="text-xs text-muted-foreground">Total Check-ins</p>
+                <p className="text-[11px] text-muted-foreground">Total Check-ins</p>
               </CardContent>
             </Card>
             <Card className="glass-card">
               <CardContent className="py-4 text-center">
-                <Wifi className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
+                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2">
+                  <Wifi className="h-4 w-4 text-accent-foreground" />
+                </div>
                 <p className="text-2xl font-bold text-foreground">{overallOnCampusPct}%</p>
-                <p className="text-xs text-muted-foreground">On Campus</p>
+                <p className="text-[11px] text-muted-foreground">On Campus</p>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         )}
 
-        {/* Sessions */}
+        {/* Sessions header */}
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-foreground">Sessions</h2>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> New Session
+              <Button size="sm">
+                <Plus className="mr-1.5 h-3.5 w-3.5" /> New Session
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -290,6 +304,7 @@ export default function TeacherCourse() {
                     value={newSessionName}
                     onChange={e => setNewSessionName(e.target.value)}
                     maxLength={100}
+                    className="h-11"
                   />
                 </div>
               </div>
@@ -304,21 +319,25 @@ export default function TeacherCourse() {
         </div>
 
         {sessions.length === 0 ? (
-          <Card className="glass-card">
-            <CardContent className="py-12 text-center">
-              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No sessions yet</h3>
-              <p className="text-muted-foreground mb-4">
-                Create your first session to start tracking attendance for this course.
-              </p>
-              <Button onClick={() => setDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Create Session
-              </Button>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="border-dashed border-2">
+              <CardContent className="py-16 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No sessions yet</h3>
+                <p className="text-muted-foreground text-sm mb-6 max-w-xs mx-auto">
+                  Create your first session to start tracking attendance for this course.
+                </p>
+                <Button onClick={() => setDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" /> Create Session
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
         ) : (
-          <div className="grid gap-4">
-            {sessions.map(s => {
+          <div className="grid gap-3">
+            {sessions.map((s, i) => {
               const isActive = !s.ends_at;
               const isExpanded = expandedSession === s.id;
               const onCampusPct = s.attendance_count > 0
@@ -327,106 +346,130 @@ export default function TeacherCourse() {
               const records = attendanceRecords[s.id];
 
               return (
-                <Card key={s.id} className="glass-card hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">
-                          {s.name || 'Untitled Session'}
-                        </CardTitle>
-                        {isActive ? (
-                          <Badge className="bg-success/15 text-success border-0 text-xs">Active</Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-xs">Ended</Badge>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive"
-                        onClick={() => deleteSession(s.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <CardDescription className="flex items-center gap-4 mt-1">
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(s.created_at).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {s.attendance_count} student{s.attendance_count !== 1 ? 's' : ''}
-                      </span>
-                      {s.attendance_count > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Wifi className="h-3 w-3" />
-                          {onCampusPct}% on campus
-                        </span>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex gap-2">
-                      <Button onClick={() => navigate(`/teacher/session/${s.id}`)} variant={isActive ? 'default' : 'outline'} className="flex-1">
-                        <QrCode className="mr-2 h-4 w-4" />
-                        {isActive ? 'Open Session' : 'View Session'}
-                      </Button>
-                      {s.attendance_count > 0 && (
-                        <Button variant="ghost" size="icon" onClick={() => toggleAttendance(s.id)}>
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
-                      )}
-                    </div>
-
-                    {isExpanded && (
-                      <div className="border border-border rounded-lg overflow-hidden">
-                        {loadingAttendance === s.id ? (
-                          <div className="flex justify-center py-6">
-                            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                <motion.div
+                  key={s.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <Card className="glass-card group">
+                    <CardHeader className="pb-2 px-5 pt-5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isActive ? 'vu-gradient' : 'bg-muted'}`}>
+                            <QrCode className={`w-4 h-4 ${isActive ? 'text-white' : 'text-muted-foreground'}`} />
                           </div>
-                        ) : records && records.length > 0 ? (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>VUnet ID</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Time</TableHead>
-                                <TableHead>Network</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {records.map(r => (
-                                <TableRow key={r.id}>
-                                  <TableCell className="font-mono text-sm">{r.student_id}</TableCell>
-                                  <TableCell className="text-sm">{r.student_name || '—'}</TableCell>
-                                  <TableCell className="text-sm text-muted-foreground">
-                                    {new Date(r.submitted_at).toLocaleTimeString()}
-                                  </TableCell>
-                                  <TableCell>
-                                    {r.on_class_network ? (
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2 py-0.5 text-xs font-medium">
-                                        <Wifi className="h-3 w-3" />
-                                        On Campus
-                                      </span>
-                                    ) : (
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs font-medium">
-                                        <WifiOff className="h-3 w-3" />
-                                        Off Campus
-                                      </span>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        ) : (
-                          <p className="text-sm text-muted-foreground text-center py-4">No records found.</p>
+                          <div>
+                            <CardTitle className="text-sm font-semibold">
+                              {s.name || 'Untitled Session'}
+                            </CardTitle>
+                            <CardDescription className="flex items-center gap-3 mt-0.5 text-[11px]">
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {new Date(s.created_at).toLocaleDateString()}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {s.attendance_count}
+                              </span>
+                              {s.attendance_count > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Wifi className="h-3 w-3" />
+                                  {onCampusPct}%
+                                </span>
+                              )}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {isActive ? (
+                            <Badge className="bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-0 text-[10px] px-2">Active</Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-[10px] px-2">Ended</Badge>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => deleteSession(s.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3 px-5 pb-5">
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => navigate(`/teacher/session/${s.id}`)}
+                          variant={isActive ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 h-9"
+                        >
+                          <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                          {isActive ? 'Open Session' : 'View Session'}
+                        </Button>
+                        {s.attendance_count > 0 && (
+                          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => toggleAttendance(s.id)}>
+                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </Button>
                         )}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
+
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="border border-border rounded-xl overflow-hidden"
+                        >
+                          {loadingAttendance === s.id ? (
+                            <div className="flex justify-center py-6">
+                              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : records && records.length > 0 ? (
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="bg-muted/30">
+                                  <TableHead className="text-[11px] font-semibold">VUnet ID</TableHead>
+                                  <TableHead className="text-[11px] font-semibold">Name</TableHead>
+                                  <TableHead className="text-[11px] font-semibold">Time</TableHead>
+                                  <TableHead className="text-[11px] font-semibold">Network</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {records.map(r => (
+                                  <TableRow key={r.id} className="hover:bg-muted/20">
+                                    <TableCell className="font-mono text-xs">{r.student_id}</TableCell>
+                                    <TableCell className="text-xs">{r.student_name || '—'}</TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">
+                                      {new Date(r.submitted_at).toLocaleTimeString()}
+                                    </TableCell>
+                                    <TableCell>
+                                      {r.on_class_network ? (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-medium">
+                                          <Wifi className="h-2.5 w-2.5" />
+                                          On Campus
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-medium">
+                                          <WifiOff className="h-2.5 w-2.5" />
+                                          Off Campus
+                                        </span>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          ) : (
+                            <p className="text-xs text-muted-foreground text-center py-4">No records found.</p>
+                          )}
+                        </motion.div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
           </div>
