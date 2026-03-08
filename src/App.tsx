@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import TeacherCourse from "./pages/TeacherCourse";
 import TeacherSession from "./pages/TeacherSession";
 import TeacherSettings from "./pages/TeacherSettings";
 import StudentAttendance from "./pages/StudentAttendance";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/teacher/login" element={<TeacherLogin />} />
             <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+            <Route path="/teacher/course/:id" element={<TeacherCourse />} />
             <Route path="/teacher/session/:id" element={<TeacherSession />} />
             <Route path="/teacher/settings" element={<TeacherSettings />} />
             <Route path="/attend" element={<StudentAttendance />} />

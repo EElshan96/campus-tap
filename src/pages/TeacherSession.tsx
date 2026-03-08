@@ -29,6 +29,7 @@ export default function TeacherSession() {
   const [loading, setLoading] = useState(true);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [className, setClassName] = useState('');
+  const [sessionName, setSessionName] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/teacher/login');
@@ -45,6 +46,7 @@ export default function TeacherSession() {
         .single();
       if (session) {
         setClassName((session as any).classes?.name || 'Unknown');
+        setSessionName((session as any).name || 'Untitled Session');
         if (session.ends_at) setSessionEnded(true);
       }
       setLoading(false);
@@ -170,9 +172,9 @@ export default function TeacherSession() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{className}</h1>
+              <h1 className="text-lg font-bold text-foreground">{sessionName}</h1>
               <p className="text-xs text-muted-foreground">
-                {sessionEnded ? 'Session ended' : 'Session active'}
+                {className} · {sessionEnded ? 'Session ended' : 'Session active'}
               </p>
             </div>
           </div>

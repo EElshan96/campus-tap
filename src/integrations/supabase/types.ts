@@ -83,6 +83,7 @@ export type Database = {
           created_at: string
           ends_at: string | null
           id: string
+          name: string | null
           starts_at: string
           token_secret: string
         }
@@ -92,6 +93,7 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           id?: string
+          name?: string | null
           starts_at?: string
           token_secret: string
         }
@@ -101,6 +103,7 @@ export type Database = {
           created_at?: string
           ends_at?: string | null
           id?: string
+          name?: string | null
           starts_at?: string
           token_secret?: string
         }
