@@ -159,6 +159,51 @@ export default function TeacherCourse() {
     }
   };
 
+  const exportAllCSV = async () => {
+    if (sessions.length === 0) return;
+    
+    // Fetch all attendance for all sessions in this course
+    const allRecords: { session_name: string; student_id: string; student_name: string; submitted_at: string; on_campus: string; ip_address: string }[] = [];
+    
+    for (const s of sessions) {
+      const { data } = await supabase
+        .from('attendance')
+        .select('student_id, student_name, submitted_at, on_class_network, ip_address')
+        .eq('session_id', s.id)
+        .order('submitted_at', { ascending: true });
+      
+      if (data) {
+        data.forEach(a => {
+          allRecords.push({
+            session_name: s.name || 'Untitled',
+            student_id: a.student_id,
+            student_name: a.student_name || '',
+            submitted_at: a.submitted_at,
+            on_campus: a.on_class_network ? 'Yes' : 'No',
+            ip_address: a.ip_address || '',
+          });
+        });
+      }
+    }
+
+    const headers = ['Session', 'VUnet ID', 'Name', 'Submitted At', 'On Campus', 'IP Address'];
+    const csvRows = [
+      headers.join(','),
+      ...allRecords.map(r =>
+        [r.session_name, r.student_id, r.student_name, r.submitted_at, r.on_campus, r.ip_address]
+          .map(v => `"${v.replace(/"/g, '""')}"`)
+          .join(',')
+      ),
+    ];
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${className.replace(/\s+/g, '-').toLowerCase()}-attendance.csv`;
+    a.click();
+    toast({ title: 'CSV exported' });
+  };
+
   // Summary stats
   const totalSessions = sessions.length;
   const totalCheckins = sessions.reduce((sum, s) => sum + s.attendance_count, 0);
