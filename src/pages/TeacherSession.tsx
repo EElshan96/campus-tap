@@ -5,9 +5,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, StopCircle, Loader2, Users, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Download, StopCircle, Loader2, Users, Wifi, WifiOff, QrCode, Radio } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 
 interface AttendanceRecord {
   id: string;
@@ -30,22 +31,23 @@ export default function TeacherSession() {
   const [sessionEnded, setSessionEnded] = useState(false);
   const [className, setClassName] = useState('');
   const [sessionName, setSessionName] = useState('');
+  const [classId, setClassId] = useState('');
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/teacher/login');
   }, [user, authLoading, navigate]);
 
-  // Fetch session info
   useEffect(() => {
     if (!sessionId || !user) return;
     const fetchInfo = async () => {
       const { data: session } = await supabase
         .from('sessions')
-        .select('*, classes(name)')
+        .select('*, classes(name, id)')
         .eq('id', sessionId)
         .single();
       if (session) {
         setClassName((session as any).classes?.name || 'Unknown');
+        setClassId((session as any).classes?.id || '');
         setSessionName((session as any).name || 'Untitled Session');
         if (session.ends_at) setSessionEnded(true);
       }
@@ -54,7 +56,6 @@ export default function TeacherSession() {
     fetchInfo();
   }, [sessionId, user]);
 
-  // Generate and rotate QR token
   const generateToken = useCallback(async () => {
     if (!sessionId || sessionEnded) return;
     try {
@@ -82,12 +83,11 @@ export default function TeacherSession() {
   useEffect(() => {
     if (!loading && user && !sessionEnded) {
       generateToken();
-      const interval = setInterval(generateToken, 90000); // Rotate every 90 seconds
+      const interval = setInterval(generateToken, 90000);
       return () => clearInterval(interval);
     }
   }, [loading, user, sessionEnded, generateToken]);
 
-  // Fetch attendance and subscribe to realtime
   useEffect(() => {
     if (!sessionId || !user) return;
 
@@ -127,13 +127,7 @@ export default function TeacherSession() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      
-      const res = await supabase.functions.invoke('export-attendance', {
-        body: null,
-        headers: {},
-      });
 
-      // Use fetch directly for CSV download
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-attendance?session_id=${sessionId}`;
       const response = await fetch(url, {
         headers: {
@@ -155,6 +149,8 @@ export default function TeacherSession() {
     }
   };
 
+  const onCampusCount = attendance.filter(a => a.on_class_network).length;
+
   if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -165,26 +161,43 @@ export default function TeacherSession() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      {/* Frosted header */}
+      <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-xl">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/teacher/dashboard')}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => classId ? navigate(`/teacher/course/${classId}`) : navigate('/teacher/dashboard')}
+            >
               <ArrowLeft className="h-4 w-4" />
             </Button>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${sessionEnded ? 'bg-muted' : 'vu-gradient'}`}>
+              <QrCode className={`w-4 h-4 ${sessionEnded ? 'text-muted-foreground' : 'text-white'}`} />
+            </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{sessionName}</h1>
-              <p className="text-xs text-muted-foreground">
-                {className} · {sessionEnded ? 'Session ended' : 'Session active'}
+              <h1 className="text-sm font-bold text-foreground leading-tight">{sessionName}</h1>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                {className}
+                <span className="text-border">·</span>
+                {sessionEnded ? (
+                  <span>Ended</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[hsl(var(--success))]">
+                    <Radio className="h-2.5 w-2.5" /> Live
+                  </span>
+                )}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={exportCSV}>
-              <Download className="mr-2 h-4 w-4" /> Export CSV
+          <div className="flex gap-1.5">
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={exportCSV}>
+              <Download className="mr-1.5 h-3.5 w-3.5" /> Export
             </Button>
             {!sessionEnded && (
-              <Button variant="destructive" size="sm" onClick={endSession}>
-                <StopCircle className="mr-2 h-4 w-4" /> End Session
+              <Button variant="destructive" size="sm" className="h-8 text-xs" onClick={endSession}>
+                <StopCircle className="mr-1.5 h-3.5 w-3.5" /> End
               </Button>
             )}
           </div>
@@ -192,94 +205,121 @@ export default function TeacherSession() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* QR Code */}
-          <Card className="glass-card">
-            <CardHeader className="text-center">
-              <CardTitle className="text-lg">
-                {sessionEnded ? 'Session Ended' : 'Scan to Mark Attendance'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center">
-              {!sessionEnded && qrToken ? (
-                <>
-                  <div className="p-4 bg-card rounded-2xl border border-border">
-                    <QRCodeSVG
-                      value={qrToken}
-                      size={280}
-                      level="M"
-                      bgColor="transparent"
-                      fgColor="hsl(213, 40%, 12%)"
-                    />
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <Card className="glass-card-elevated overflow-hidden">
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-base">
+                  {sessionEnded ? 'Session Ended' : 'Scan to Check In'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center pb-6">
+                {!sessionEnded && qrToken ? (
+                  <>
+                    <div className="p-5 bg-white rounded-2xl border border-border shadow-sm">
+                      <QRCodeSVG
+                        value={qrToken}
+                        size={260}
+                        level="M"
+                        bgColor="transparent"
+                        fgColor="hsl(220, 40%, 10%)"
+                      />
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-4 text-center">
+                      Auto-refreshes every 90 seconds
+                    </p>
+                  </>
+                ) : sessionEnded ? (
+                  <div className="py-12 text-center">
+                    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                      <StopCircle className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">This session has ended.</p>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-4 text-center">
-                    QR code refreshes automatically every 90 seconds
-                  </p>
-                </>
-              ) : sessionEnded ? (
-                <p className="text-muted-foreground py-8">This session has ended.</p>
-              ) : (
-                <Loader2 className="h-8 w-8 animate-spin text-primary my-8" />
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <div className="py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Attendance List */}
-          <Card className="glass-card">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Present
-                </CardTitle>
-                <Badge variant="secondary" className="text-sm">
-                  {attendance.length}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {attendance.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  No students have checked in yet.
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {attendance.map(a => (
-                    <div
-                      key={a.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                    >
-                      <div>
-                        <p className="font-medium text-sm text-foreground">{a.student_id}</p>
-                        {a.student_name && (
-                          <p className="text-xs text-muted-foreground">{a.student_name}</p>
-                        )}
-                        {a.ip_address && (
-                          <p className="text-xs text-muted-foreground font-mono">{a.ip_address}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {a.on_class_network ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-success/15 text-success px-2 py-0.5 text-xs font-medium">
-                            <Wifi className="h-3 w-3" />
-                            On Campus
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-xs font-medium">
-                            <WifiOff className="h-3 w-3" />
-                            Off Campus
-                          </span>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(a.submitted_at).toLocaleTimeString()}
-                        </span>
-                      </div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="glass-card-elevated">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                      <Users className="h-4 w-4 text-accent-foreground" />
                     </div>
-                  ))}
+                    Present
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {onCampusCount > 0 && (
+                      <Badge variant="secondary" className="text-[10px] gap-1">
+                        <Wifi className="h-2.5 w-2.5" /> {onCampusCount}
+                      </Badge>
+                    )}
+                    <Badge className="text-[10px] bg-primary/10 text-primary border-0">
+                      {attendance.length}
+                    </Badge>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                {attendance.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-3">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      No students have checked in yet.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[28rem] overflow-y-auto pr-1">
+                    {attendance.map((a, i) => (
+                      <motion.div
+                        key={a.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.03 }}
+                        className="flex items-center justify-between p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold text-xs text-foreground">{a.student_id}</p>
+                          {a.student_name && (
+                            <p className="text-[11px] text-muted-foreground truncate">{a.student_name}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {a.on_class_network ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-medium">
+                              <Wifi className="h-2.5 w-2.5" />
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-medium">
+                              <WifiOff className="h-2.5 w-2.5" />
+                            </span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground tabular-nums">
+                            {new Date(a.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </main>
     </div>
