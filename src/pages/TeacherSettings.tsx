@@ -23,6 +23,8 @@ export default function TeacherSettings() {
     if (!authLoading && !user) navigate('/teacher/login');
   }, [user, authLoading, navigate]);
 
+  const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16'];
+
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
@@ -34,6 +36,9 @@ export default function TeacherSettings() {
       if (data) {
         setRetentionDays(data.retention_days);
         setNetworkRanges(data.allowed_network_ranges || []);
+      } else {
+        // Pre-fill VU Amsterdam campus ranges for new teachers
+        setNetworkRanges(VU_DEFAULT_RANGES);
       }
       setLoading(false);
     };
