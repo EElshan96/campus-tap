@@ -16,9 +16,11 @@ export default function StudentAttendance() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token || !studentId.trim()) return;
+    if (!token || !vunetId.trim() || !firstName.trim() || !lastName.trim()) return;
     setSubmitting(true);
     setResult(null);
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-attendance`;
@@ -30,8 +32,8 @@ export default function StudentAttendance() {
         },
         body: JSON.stringify({
           token,
-          student_id: studentId.trim(),
-          student_name: studentName.trim() || undefined,
+          student_id: vunetId.trim(),
+          student_name: fullName,
         }),
       });
 
