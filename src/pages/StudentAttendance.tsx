@@ -122,29 +122,43 @@ export default function StudentAttendance() {
             )}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="studentId">Student ID *</Label>
+                <Label htmlFor="vunetId">VUnet ID *</Label>
                 <Input
-                  id="studentId"
-                  placeholder="e.g., ABC1234"
-                  value={studentId}
-                  onChange={e => setStudentId(e.target.value.toUpperCase())}
+                  id="vunetId"
+                  placeholder="e.g., abc123"
+                  value={vunetId}
+                  onChange={e => setVunetId(e.target.value.toLowerCase())}
                   required
                   maxLength={20}
-                  pattern="[a-zA-Z0-9]*"
-                  title="Alphanumeric characters only"
+                  pattern="[a-zA-Z]{3}[0-9]{3}"
+                  title="VUnet ID format: 3 letters followed by 3 digits (e.g., abc123)"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="studentName">Name (optional)</Label>
-                <Input
-                  id="studentName"
-                  placeholder="Your name"
-                  value={studentName}
-                  onChange={e => setStudentName(e.target.value)}
-                  maxLength={100}
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name *</Label>
+                  <Input
+                    id="firstName"
+                    placeholder="First name"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    required
+                    maxLength={50}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Last name"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    required
+                    maxLength={50}
+                  />
+                </div>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting || !studentId.trim()}>
+              <Button type="submit" className="w-full" disabled={submitting || !vunetId.trim() || !firstName.trim() || !lastName.trim()}>
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Confirm Attendance
               </Button>
