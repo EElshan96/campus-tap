@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2, GraduationCap, Loader2, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function StudentAttendance() {
   const [searchParams] = useSearchParams();
@@ -54,15 +55,19 @@ export default function StudentAttendance() {
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md glass-card">
-          <CardContent className="py-12 text-center">
-            <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
-            <h2 className="text-lg font-bold text-foreground mb-2">Invalid Link</h2>
-            <p className="text-muted-foreground">
-              Please scan the QR code displayed in your classroom to mark attendance.
-            </p>
-          </CardContent>
-        </Card>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <Card className="w-full max-w-md">
+            <CardContent className="py-12 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="h-7 w-7 text-destructive" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground mb-2">Invalid Link</h2>
+              <p className="text-muted-foreground text-sm">
+                Please scan the QR code displayed in your classroom to mark attendance.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
@@ -70,51 +75,57 @@ export default function StudentAttendance() {
   if (result?.success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md glass-card">
-          <CardContent className="py-12 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
-              <CheckCircle2 className="h-8 w-8 text-success" />
-            </div>
-            <h2 className="text-xl font-bold text-foreground mb-2">Marked Present!</h2>
-            <p className="text-muted-foreground mb-4">{result.message}</p>
-            <div className="flex items-center justify-center gap-2 text-sm">
-              {result.onNetwork ? (
-                <>
-                  <Wifi className="h-4 w-4 text-success" />
-                  <span className="text-success">On campus network</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Off campus network</span>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+          <Card className="w-full max-w-md">
+            <CardContent className="py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="h-8 w-8 text-success" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground mb-2">Marked Present!</h2>
+              <p className="text-muted-foreground text-sm mb-5">{result.message}</p>
+              <div className="inline-flex items-center gap-2 text-sm rounded-full px-4 py-2 bg-muted">
+                {result.onNetwork ? (
+                  <>
+                    <Wifi className="h-4 w-4 text-success" />
+                    <span className="text-success font-medium">On campus network</span>
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Off campus network</span>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
+      >
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl vu-gradient mb-3">
-            <GraduationCap className="w-7 h-7 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl vu-gradient mb-3">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-foreground">VU Attendance</h1>
           <p className="text-sm text-muted-foreground">Confirm your attendance</p>
         </div>
 
-        <Card className="glass-card">
+        <Card>
           <CardHeader>
-            <CardTitle>Mark Attendance</CardTitle>
+            <CardTitle className="text-lg">Mark Attendance</CardTitle>
             <CardDescription>Enter your VUnet ID and name to confirm your presence.</CardDescription>
           </CardHeader>
           <CardContent>
             {result && !result.success && (
-              <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+              <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
                 <p className="text-sm text-destructive flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 flex-shrink-0" />
                   {result.message}
@@ -133,6 +144,7 @@ export default function StudentAttendance() {
                   maxLength={20}
                   pattern="[a-zA-Z]{3}[0-9]{3}"
                   title="VUnet ID format: 3 letters followed by 3 digits (e.g., abc123)"
+                  className="h-11"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -145,6 +157,7 @@ export default function StudentAttendance() {
                     onChange={e => setFirstName(e.target.value)}
                     required
                     maxLength={50}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
@@ -156,10 +169,11 @@ export default function StudentAttendance() {
                     onChange={e => setLastName(e.target.value)}
                     required
                     maxLength={50}
+                    className="h-11"
                   />
                 </div>
               </div>
-              <Button type="submit" className="w-full" disabled={submitting || !vunetId.trim() || !firstName.trim() || !lastName.trim()}>
+              <Button type="submit" className="w-full h-11 font-semibold" disabled={submitting || !vunetId.trim() || !firstName.trim() || !lastName.trim()}>
                 {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Confirm Attendance
               </Button>
@@ -167,11 +181,11 @@ export default function StudentAttendance() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          Your IP is checked to verify campus network presence. 
+        <p className="text-[11px] text-muted-foreground text-center mt-5 leading-relaxed">
+          Your IP is checked to verify campus network presence.
           User-agent data may be hashed for anti-fraud purposes.
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }
