@@ -24,7 +24,7 @@ export default function TeacherSettings() {
     if (!authLoading && !user) navigate('/teacher/login');
   }, [user, authLoading, navigate]);
 
-  const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16'];
+  const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16', '192.87.106.0/24'];
 
   useEffect(() => {
     if (!user) return;
