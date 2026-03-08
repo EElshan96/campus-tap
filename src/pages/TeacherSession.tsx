@@ -172,9 +172,9 @@ export default function TeacherSession() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-lg font-bold text-foreground">{className}</h1>
+              <h1 className="text-lg font-bold text-foreground">{sessionName}</h1>
               <p className="text-xs text-muted-foreground">
-                {sessionEnded ? 'Session ended' : 'Session active'}
+                {className} · {sessionEnded ? 'Session ended' : 'Session active'}
               </p>
             </div>
           </div>
