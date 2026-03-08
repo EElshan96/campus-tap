@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,99 +6,98 @@
 
 @layer base {
   :root {
-    /* VU Amsterdam Corporate Identity */
-    --background: 210 20% 98%;
-    --foreground: 213 40% 12%;
+    /* VU Amsterdam — Elevated identity */
+    --background: 220 20% 97%;
+    --foreground: 220 40% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 213 40% 12%;
+    --card-foreground: 220 40% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 213 40% 12%;
+    --popover-foreground: 220 40% 10%;
 
-    /* VU Blue */
-    --primary: 199 100% 36%;
+    /* VU Blue — richer, deeper */
+    --primary: 200 100% 32%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 25% 93%;
-    --secondary-foreground: 213 40% 12%;
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 220 40% 10%;
 
-    --muted: 210 20% 95%;
-    --muted-foreground: 213 15% 46%;
+    --muted: 220 16% 93%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 199 80% 92%;
-    --accent-foreground: 199 100% 25%;
+    --accent: 200 70% 93%;
+    --accent-foreground: 200 100% 22%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 4 76% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 199 100% 36%;
+    --border: 220 16% 89%;
+    --input: 220 16% 89%;
+    --ring: 200 100% 32%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
-    /* VU Success green */
-    --success: 152 60% 40%;
+    /* Status */
+    --success: 160 60% 38%;
     --success-foreground: 0 0% 100%;
 
-    /* VU Warning */
-    --warning: 38 92% 50%;
+    --warning: 40 96% 50%;
     --warning-foreground: 0 0% 100%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 199 100% 36%;
+    --sidebar-primary: 200 100% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 199 80% 92%;
-    --sidebar-accent-foreground: 199 100% 25%;
-    --sidebar-border: 210 20% 88%;
-    --sidebar-ring: 199 100% 36%;
+    --sidebar-accent: 200 70% 93%;
+    --sidebar-accent-foreground: 200 100% 22%;
+    --sidebar-border: 220 16% 89%;
+    --sidebar-ring: 200 100% 32%;
   }
 
   .dark {
-    --background: 213 40% 8%;
-    --foreground: 210 20% 95%;
+    --background: 220 30% 6%;
+    --foreground: 220 15% 92%;
 
-    --card: 213 35% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 220 25% 10%;
+    --card-foreground: 220 15% 92%;
 
-    --popover: 213 35% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 220 25% 10%;
+    --popover-foreground: 220 15% 92%;
 
-    --primary: 199 100% 45%;
+    --primary: 200 100% 48%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 30% 18%;
-    --secondary-foreground: 210 20% 95%;
+    --secondary: 220 20% 16%;
+    --secondary-foreground: 220 15% 92%;
 
-    --muted: 213 30% 18%;
-    --muted-foreground: 210 15% 60%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 220 10% 55%;
 
-    --accent: 199 60% 20%;
-    --accent-foreground: 199 80% 80%;
+    --accent: 200 50% 16%;
+    --accent-foreground: 200 70% 78%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 4 70% 38%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 213 30% 20%;
-    --input: 213 30% 20%;
-    --ring: 199 100% 45%;
+    --border: 220 20% 16%;
+    --input: 220 20% 16%;
+    --ring: 200 100% 48%;
 
-    --success: 152 60% 35%;
+    --success: 160 55% 32%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 80% 45%;
+    --warning: 40 80% 42%;
     --warning-foreground: 0 0% 100%;
 
-    --sidebar-background: 213 40% 8%;
-    --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 199 100% 45%;
+    --sidebar-background: 220 30% 6%;
+    --sidebar-foreground: 220 15% 92%;
+    --sidebar-primary: 200 100% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 199 60% 20%;
-    --sidebar-accent-foreground: 199 80% 80%;
-    --sidebar-border: 213 30% 20%;
-    --sidebar-ring: 199 100% 45%;
+    --sidebar-accent: 200 50% 16%;
+    --sidebar-accent-foreground: 200 70% 78%;
+    --sidebar-border: 220 20% 16%;
+    --sidebar-ring: 200 100% 48%;
   }
 }
 
@@ -108,25 +107,63 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
 @layer utilities {
   .vu-gradient {
-    background: linear-gradient(135deg, hsl(199, 100%, 36%) 0%, hsl(213, 40%, 12%) 100%);
+    background: linear-gradient(135deg, hsl(200, 100%, 32%) 0%, hsl(220, 60%, 14%) 100%);
   }
 
-  .vu-gradient-light {
-    background: linear-gradient(135deg, hsl(199, 80%, 92%) 0%, hsl(210, 20%, 98%) 100%);
+  .vu-gradient-subtle {
+    background: linear-gradient(135deg, hsl(200, 80%, 94%) 0%, hsl(220, 30%, 96%) 100%);
+  }
+
+  .vu-gradient-hero {
+    background: linear-gradient(160deg, hsl(220, 50%, 8%) 0%, hsl(200, 100%, 18%) 50%, hsl(200, 100%, 32%) 100%);
   }
 
   .glass-card {
-    @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
+    @apply bg-card border border-border/60 shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .glass-card-elevated {
+    @apply bg-card border border-border/40 shadow-lg;
+  }
+
+  .pattern-dots {
+    background-image: radial-gradient(circle, hsl(200 100% 32% / 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(200, 100%, 52%) 0%, hsl(200, 100%, 32%) 100%);
+  }
+
+  .animate-in {
+    animation: fadeSlideIn 0.4s ease-out both;
+  }
+
+  @keyframes fadeSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
