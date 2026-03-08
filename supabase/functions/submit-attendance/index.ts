@@ -67,14 +67,14 @@ serve(async (req) => {
     const { token, student_id, student_name } = await req.json();
 
     if (!token || !student_id) {
-      return new Response(JSON.stringify({ error: 'token and student_id are required' }), { 
+      return new Response(JSON.stringify({ error: 'token and VUnet ID are required' }), { 
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
     // Validate student_id format (alphanumeric, max 20 chars)
     if (!/^[a-zA-Z0-9]{1,20}$/.test(student_id)) {
-      return new Response(JSON.stringify({ error: 'Invalid student ID format. Use alphanumeric characters only (max 20).' }), { 
+      return new Response(JSON.stringify({ error: 'Invalid VUnet ID format. Use alphanumeric characters only (max 20).' }), { 
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }

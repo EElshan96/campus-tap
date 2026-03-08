@@ -47,7 +47,7 @@ serve(async (req) => {
     }
 
     // Generate CSV
-    const headers = ['Student ID', 'Student Name', 'Submitted At', 'On Class Network'];
+    const headers = ['VUnet ID', 'Name', 'Submitted At', 'On Class Network'];
     const rows = (attendance || []).map(a => [
       a.student_id,
       a.student_name || '',
