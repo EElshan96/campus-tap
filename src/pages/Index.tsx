@@ -114,7 +114,7 @@ export default function Index() {
       </div>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Vrije Universiteit Amsterdam — VU Attendance System
+        © {new Date().getFullYear()} Vrije Universiteit Amsterdam - SBE - Edona Elshan
       </footer>
     </div>
   );
