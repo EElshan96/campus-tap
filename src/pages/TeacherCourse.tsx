@@ -127,6 +127,15 @@ export default function TeacherCourse() {
     if (!newSessionName.trim() || !user || !classId) return;
     setCreating(true);
 
+    // Fetch teacher's configured network ranges
+    const { data: settings } = await supabase
+      .from('teacher_settings')
+      .select('allowed_network_ranges')
+      .eq('teacher_id', user.id)
+      .single();
+
+    const allowedCidrs = settings?.allowed_network_ranges ?? [];
+
     const tokenSecret = crypto.randomUUID() + crypto.randomUUID();
     const { data, error } = await supabase
       .from('sessions')
@@ -134,6 +143,7 @@ export default function TeacherCourse() {
         class_id: classId,
         token_secret: tokenSecret,
         name: newSessionName.trim(),
+        allowed_cidrs: allowedCidrs,
       })
       .select()
       .single();
