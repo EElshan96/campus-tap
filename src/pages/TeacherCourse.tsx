@@ -122,7 +122,7 @@ export default function TeacherCourse() {
     }
     setLoadingAttendance(null);
   };
-
+const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16', '192.87.106.0/24'];
   const createSession = async () => {
     if (!newSessionName.trim() || !user || !classId) return;
     setCreating(true);
@@ -134,7 +134,7 @@ export default function TeacherCourse() {
       .eq('teacher_id', user.id)
       .single();
 
-    const allowedCidrs = settings?.allowed_network_ranges ?? [];
+const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
 
     const tokenSecret = crypto.randomUUID() + crypto.randomUUID();
     const { data, error } = await supabase
