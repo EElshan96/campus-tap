@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle2, GraduationCap, Loader2, AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { CheckCircle2, GraduationCap, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function StudentAttendance() {
@@ -15,7 +15,7 @@ export default function StudentAttendance() {
   const [firstName, setFirstName] = useState(isDemo ? 'Jane' : '');
   const [lastName, setLastName] = useState(isDemo ? 'Doe' : '');
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; message: string; onNetwork?: boolean } | null>(null);
+  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +27,7 @@ export default function StudentAttendance() {
     if (isDemo) {
       await new Promise(r => setTimeout(r, 1200));
       setSubmitting(false);
-      setResult({ success: true, message: 'Attendance recorded successfully (demo)', onNetwork: true });
+      setResult({ success: true, message: 'Attendance recorded successfully (demo)' });
       return;
     }
 
@@ -51,7 +51,7 @@ export default function StudentAttendance() {
       const data = await res.json();
 
       if (res.ok) {
-        setResult({ success: true, message: data.message, onNetwork: data.on_class_network });
+        setResult({ success: true, message: data.message });
       } else {
         setResult({ success: false, message: data.error || 'Something went wrong' });
       }
@@ -91,20 +91,7 @@ export default function StudentAttendance() {
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">Marked Present!</h2>
-              <p className="text-muted-foreground text-sm mb-5">{result.message}</p>
-              <div className="inline-flex items-center gap-2 text-sm rounded-full px-4 py-2 bg-muted">
-                {result.onNetwork ? (
-                  <>
-                    <Wifi className="h-4 w-4 text-success" />
-                    <span className="text-success font-medium">On campus network</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Off campus network</span>
-                  </>
-                )}
-              </div>
+              <p className="text-muted-foreground text-sm">{result.message}</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -191,8 +178,7 @@ export default function StudentAttendance() {
         </Card>
 
         <p className="text-[11px] text-muted-foreground text-center mt-5 leading-relaxed">
-          Your IP is checked to verify campus network presence.
-          User-agent data may be hashed for anti-fraud purposes.
+          Attendance can only be submitted from the active classroom QR link.
         </p>
       </motion.div>
     </div>

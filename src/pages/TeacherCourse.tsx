@@ -10,7 +10,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import {
-  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, Wifi, WifiOff, ChevronDown, ChevronUp, BarChart3, Download, BookOpen,
+  ArrowLeft, Plus, QrCode, Loader2, Calendar, Users, Trash2, Clock, ChevronDown, ChevronUp, BarChart3, Download, BookOpen,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -24,8 +24,6 @@ interface AttendanceRecord {
   student_id: string;
   student_name: string | null;
   submitted_at: string;
-  on_class_network: boolean | null;
-  ip_address: string | null;
 }
 
 interface SessionItem {
@@ -35,7 +33,6 @@ interface SessionItem {
   ends_at: string | null;
   created_at: string;
   attendance_count: number;
-  on_campus_count: number;
 }
 
 export default function TeacherCourse() {
@@ -86,13 +83,12 @@ export default function TeacherCourse() {
         data.map(async (s) => {
           const { data: attendanceData } = await supabase
             .from('attendance')
-            .select('on_class_network')
+            .select('id')
             .eq('session_id', s.id);
 
           const total = attendanceData?.length ?? 0;
-          const onCampus = attendanceData?.filter(a => a.on_class_network).length ?? 0;
 
-          return { ...s, attendance_count: total, on_campus_count: onCampus };
+          return { ...s, attendance_count: total };
         })
       );
       setSessions(sessionsWithStats);
@@ -122,19 +118,9 @@ export default function TeacherCourse() {
     }
     setLoadingAttendance(null);
   };
-const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16', '192.87.106.0/24'];
   const createSession = async () => {
     if (!newSessionName.trim() || !user || !classId) return;
     setCreating(true);
-
-    // Fetch teacher's configured network ranges
-    const { data: settings } = await supabase
-      .from('teacher_settings')
-      .select('allowed_network_ranges')
-      .eq('teacher_id', user.id)
-      .single();
-
-const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
 
     const tokenSecret = crypto.randomUUID() + crypto.randomUUID();
     const { data, error } = await supabase
@@ -143,7 +129,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
         class_id: classId,
         token_secret: tokenSecret,
         name: newSessionName.trim(),
-        allowed_cidrs: allowedCidrs,
       })
       .select()
       .single();
@@ -173,12 +158,12 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
   const exportAllCSV = async () => {
     if (sessions.length === 0) return;
     
-    const allRecords: { session_name: string; student_id: string; student_name: string; submitted_at: string; on_campus: string; ip_address: string }[] = [];
+    const allRecords: { session_name: string; student_id: string; student_name: string; submitted_at: string }[] = [];
     
     for (const s of sessions) {
       const { data } = await supabase
         .from('attendance')
-        .select('student_id, student_name, submitted_at, on_class_network, ip_address')
+        .select('student_id, student_name, submitted_at')
         .eq('session_id', s.id)
         .order('submitted_at', { ascending: true });
       
@@ -189,18 +174,16 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
             student_id: a.student_id,
             student_name: a.student_name || '',
             submitted_at: a.submitted_at,
-            on_campus: a.on_class_network ? 'Yes' : 'No',
-            ip_address: a.ip_address || '',
           });
         });
       }
     }
 
-    const headers = ['Session', 'VUnet ID', 'Name', 'Submitted At', 'On Campus', 'IP Address'];
+    const headers = ['Session', 'VUnet ID', 'Name', 'Submitted At'];
     const csvRows = [
       headers.join(','),
       ...allRecords.map(r =>
-        [r.session_name, r.student_id, r.student_name, r.submitted_at, r.on_campus, r.ip_address]
+        [r.session_name, r.student_id, r.student_name, r.submitted_at]
           .map(v => `"${v.replace(/"/g, '""')}"`)
           .join(',')
       ),
@@ -216,8 +199,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
 
   const totalSessions = sessions.length;
   const totalCheckins = sessions.reduce((sum, s) => sum + s.attendance_count, 0);
-  const totalOnCampus = sessions.reduce((sum, s) => sum + s.on_campus_count, 0);
-  const overallOnCampusPct = totalCheckins > 0 ? Math.round((totalOnCampus / totalCheckins) * 100) : 0;
 
   if (authLoading || loading) {
     return (
@@ -258,7 +239,7 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
         {/* Summary Stats */}
         {totalSessions > 0 && (
           <motion.div
-            className="grid grid-cols-3 gap-3"
+            className="grid grid-cols-2 gap-3"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -279,15 +260,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
                 </div>
                 <p className="text-2xl font-bold text-foreground">{totalCheckins}</p>
                 <p className="text-[11px] text-muted-foreground">Total Check-ins</p>
-              </CardContent>
-            </Card>
-            <Card className="glass-card">
-              <CardContent className="py-4 text-center">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center mx-auto mb-2">
-                  <Wifi className="h-4 w-4 text-accent-foreground" />
-                </div>
-                <p className="text-2xl font-bold text-foreground">{overallOnCampusPct}%</p>
-                <p className="text-[11px] text-muted-foreground">On Campus</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -350,9 +322,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
             {sessions.map((s, i) => {
               const isActive = !s.ends_at;
               const isExpanded = expandedSession === s.id;
-              const onCampusPct = s.attendance_count > 0
-                ? Math.round((s.on_campus_count / s.attendance_count) * 100)
-                : 0;
               const records = attendanceRecords[s.id];
 
               return (
@@ -382,12 +351,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
                                 <Users className="h-3 w-3" />
                                 {s.attendance_count}
                               </span>
-                              {s.attendance_count > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Wifi className="h-3 w-3" />
-                                  {onCampusPct}%
-                                </span>
-                              )}
                             </CardDescription>
                           </div>
                         </div>
@@ -444,7 +407,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
                                   <TableHead className="text-[11px] font-semibold">VUnet ID</TableHead>
                                   <TableHead className="text-[11px] font-semibold">Name</TableHead>
                                   <TableHead className="text-[11px] font-semibold">Time</TableHead>
-                                  <TableHead className="text-[11px] font-semibold">Network</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -454,19 +416,6 @@ const allowedCidrs = settings?.allowed_network_ranges ?? VU_DEFAULT_RANGES;
                                     <TableCell className="text-xs">{r.student_name || '—'}</TableCell>
                                     <TableCell className="text-xs text-muted-foreground">
                                       {new Date(r.submitted_at).toLocaleTimeString()}
-                                    </TableCell>
-                                    <TableCell>
-                                      {r.on_class_network ? (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-medium">
-                                          <Wifi className="h-2.5 w-2.5" />
-                                          On Campus
-                                        </span>
-                                      ) : (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-medium">
-                                          <WifiOff className="h-2.5 w-2.5" />
-                                          Off Campus
-                                        </span>
-                                      )}
                                     </TableCell>
                                   </TableRow>
                                 ))}

@@ -38,7 +38,7 @@ serve(async (req) => {
     // Fetch attendance (RLS will ensure teacher owns the session)
     const { data: attendance, error } = await supabase
       .from('attendance')
-      .select('student_id, student_name, submitted_at, on_class_network')
+      .select('student_id, student_name, submitted_at')
       .eq('session_id', sessionId)
       .order('submitted_at', { ascending: true });
 
@@ -47,12 +47,11 @@ serve(async (req) => {
     }
 
     // Generate CSV
-    const headers = ['VUnet ID', 'Name', 'Submitted At', 'On Class Network'];
+    const headers = ['VUnet ID', 'Name', 'Submitted At'];
     const rows = (attendance || []).map(a => [
       a.student_id,
       a.student_name || '',
       a.submitted_at,
-      a.on_class_network ? 'Yes' : 'No',
     ]);
 
     const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
