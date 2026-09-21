@@ -8,6 +8,13 @@
       "when": 1789999689406,
       "tag": "0000_disable_attendance_network_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789999799283,
+      "tag": "0001_restrict_attendance_privacy_columns",
+      "breakpoints": true
     }
   ]
 }
