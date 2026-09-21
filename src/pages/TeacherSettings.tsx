@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Save, Loader2, Plus, X, Settings, Shield, Clock } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Settings, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 
@@ -15,8 +15,6 @@ export default function TeacherSettings() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [retentionDays, setRetentionDays] = useState(90);
-  const [networkRanges, setNetworkRanges] = useState<string[]>([]);
-  const [newRange, setNewRange] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -24,37 +22,21 @@ export default function TeacherSettings() {
     if (!authLoading && !user) navigate('/teacher/login');
   }, [user, authLoading, navigate]);
 
-  const VU_DEFAULT_RANGES = ['145.108.0.0/16', '130.37.0.0/16', '192.87.106.0/24'];
-
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
       const { data } = await supabase
         .from('teacher_settings')
-        .select('*')
+        .select('retention_days')
         .eq('teacher_id', user.id)
         .maybeSingle();
       if (data) {
         setRetentionDays(data.retention_days);
-        setNetworkRanges(data.allowed_network_ranges || []);
-      } else {
-        setNetworkRanges(VU_DEFAULT_RANGES);
       }
       setLoading(false);
     };
     fetch();
   }, [user]);
-
-  const addRange = () => {
-    const trimmed = newRange.trim();
-    if (!trimmed || networkRanges.includes(trimmed)) return;
-    setNetworkRanges([...networkRanges, trimmed]);
-    setNewRange('');
-  };
-
-  const removeRange = (idx: number) => {
-    setNetworkRanges(networkRanges.filter((_, i) => i !== idx));
-  };
 
   const save = async () => {
     if (!user) return;
@@ -62,7 +44,6 @@ export default function TeacherSettings() {
     const { error } = await supabase.from('teacher_settings').upsert({
       teacher_id: user.id,
       retention_days: retentionDays,
-      allowed_network_ranges: networkRanges,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'teacher_id' });
 
@@ -125,50 +106,6 @@ export default function TeacherSettings() {
                   className="h-10"
                 />
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
-          <Card className="glass-card">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-accent-foreground" />
-                </div>
-                <div>
-                  <CardTitle className="text-sm">Allowed Network Ranges</CardTitle>
-                  <CardDescription className="text-[11px]">
-                    CIDR ranges for campus networks. Matching students are flagged "on campus".
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="e.g., 130.37.0.0/16"
-                  value={newRange}
-                  onChange={e => setNewRange(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addRange())}
-                  className="h-10"
-                />
-                <Button variant="outline" size="icon" className="h-10 w-10 shrink-0" onClick={addRange}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-              {networkRanges.length > 0 && (
-                <div className="space-y-1.5">
-                  {networkRanges.map((range, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors">
-                      <code className="text-xs text-foreground font-mono">{range}</code>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removeRange(idx)}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </CardContent>
           </Card>
         </motion.div>

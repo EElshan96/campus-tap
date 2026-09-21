@@ -6,18 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function ipToInt(ip: string): number {
-  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
-}
-
-function ipInCidr(ip: string, cidr: string): boolean {
-  const [network, prefixStr] = cidr.split('/');
-  const prefix = parseInt(prefixStr, 10);
-  if (isNaN(prefix) || prefix < 0 || prefix > 32) return false;
-  const mask = prefix === 0 ? 0 : (~0 << (32 - prefix)) >>> 0;
-  return (ipToInt(ip) & mask) === (ipToInt(network) & mask);
-}
-
 function base64urlDecode(str: string): Uint8Array {
   str = str.replace(/-/g, '+').replace(/_/g, '/');
   while (str.length % 4) str += '=';
@@ -49,12 +37,6 @@ async function verifyToken(token: string, secret: string): Promise<Record<string
   if (payload.exp && payload.exp < now) return null;
   
   return payload;
-}
-
-async function hashValue(value: string): Promise<string> {
-  const enc = new TextEncoder();
-  const hash = await crypto.subtle.digest('SHA-256', enc.encode(value));
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // Simple in-memory rate limiting (per function instance)
@@ -135,7 +117,7 @@ serve(async (req) => {
     // Get session and its secret
     const { data: session, error: sessionError } = await supabase
       .from('sessions')
-      .select('id, token_secret, allowed_cidrs, class_id, ends_at')
+      .select('id, token_secret, class_id, ends_at')
       .eq('id', sessionId)
       .single();
 
@@ -160,19 +142,6 @@ serve(async (req) => {
       });
     }
 
-    // IP-based network check
-const clientIp = req.headers.get('cf-connecting-ip') ||
-                 req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
-                 req.headers.get('x-real-ip') || 'unknown';    
-    let onClassNetwork = false;
-    if (session.allowed_cidrs && session.allowed_cidrs.length > 0 && clientIp !== 'unknown') {
-      onClassNetwork = session.allowed_cidrs.some((cidr: string) => ipInCidr(clientIp, cidr));
-    }
-
-    // Hash user agent
-    const userAgent = req.headers.get('user-agent') || '';
-    const userAgentHash = userAgent ? await hashValue(userAgent) : null;
-
     // Insert attendance (unique constraint handles duplicates)
     const { error: insertError } = await supabase
       .from('attendance')
@@ -180,9 +149,6 @@ const clientIp = req.headers.get('cf-connecting-ip') ||
         session_id: sessionId,
         student_id: student_id.toUpperCase(),
         student_name: cleanName,
-        on_class_network: onClassNetwork,
-        user_agent_hash: userAgentHash,
-        ip_address: clientIp,
       });
 
     if (insertError) {
@@ -200,7 +166,6 @@ const clientIp = req.headers.get('cf-connecting-ip') ||
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Attendance recorded successfully!',
-      on_class_network: onClassNetwork
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

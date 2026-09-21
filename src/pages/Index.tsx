@@ -20,7 +20,7 @@ const features = [
   {
     icon: Shield,
     title: 'Anti-Cheating',
-    desc: 'Signed tokens, campus IP validation, and one-check-in-per-student enforcement.',
+    desc: 'Signed tokens and one-check-in-per-student enforcement keep attendance reliable.',
   },
   {
     icon: Clock,
@@ -67,7 +67,7 @@ export default function Index() {
             custom={2}
             className="text-lg md:text-xl text-white/60 max-w-lg mx-auto mb-10"
           >
-            Secure QR-based check-ins with campus network verification. No apps to install.
+            Secure QR-based check-ins for classroom attendance. No apps to install.
           </motion.p>
 
           <motion.div

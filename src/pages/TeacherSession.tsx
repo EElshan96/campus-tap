@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, StopCircle, Loader2, Users, Wifi, WifiOff, QrCode, Radio } from 'lucide-react';
+import { ArrowLeft, Download, StopCircle, Loader2, Users, QrCode, Radio } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
@@ -15,8 +15,6 @@ interface AttendanceRecord {
   student_id: string;
   student_name: string | null;
   submitted_at: string;
-  on_class_network: boolean | null;
-  ip_address: string | null;
 }
 
 export default function TeacherSession() {
@@ -42,7 +40,7 @@ export default function TeacherSession() {
     const fetchInfo = async () => {
       const { data: session } = await supabase
         .from('sessions')
-        .select('*, classes(name, id)')
+        .select('id, name, ends_at, classes(name, id)')
         .eq('id', sessionId)
         .single();
       if (session) {
@@ -94,7 +92,7 @@ export default function TeacherSession() {
     const fetchAttendance = async () => {
       const { data } = await supabase
         .from('attendance')
-        .select('*')
+        .select('id, student_id, student_name, submitted_at')
         .eq('session_id', sessionId)
         .order('submitted_at', { ascending: true });
       if (data) setAttendance(data);
@@ -148,8 +146,6 @@ export default function TeacherSession() {
       toast({ title: 'Export failed', variant: 'destructive' });
     }
   };
-
-  const onCampusCount = attendance.filter(a => a.on_class_network).length;
 
   if (loading || authLoading) {
     return (
@@ -262,11 +258,6 @@ export default function TeacherSession() {
                     Present
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    {onCampusCount > 0 && (
-                      <Badge variant="secondary" className="text-[10px] gap-1">
-                        <Wifi className="h-2.5 w-2.5" /> {onCampusCount}
-                      </Badge>
-                    )}
                     <Badge className="text-[10px] bg-primary/10 text-primary border-0">
                       {attendance.length}
                     </Badge>
@@ -300,15 +291,6 @@ export default function TeacherSession() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          {a.on_class_network ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] px-2 py-0.5 text-[10px] font-medium">
-                              <Wifi className="h-2.5 w-2.5" />
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 text-destructive px-2 py-0.5 text-[10px] font-medium">
-                              <WifiOff className="h-2.5 w-2.5" />
-                            </span>
-                          )}
                           <span className="text-[10px] text-muted-foreground tabular-nums">
                             {new Date(a.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
