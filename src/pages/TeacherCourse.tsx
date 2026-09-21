@@ -109,7 +109,7 @@ export default function TeacherCourse() {
     setLoadingAttendance(sessionId);
     const { data } = await supabase
       .from('attendance')
-      .select('*')
+      .select('id, student_id, student_name, submitted_at')
       .eq('session_id', sessionId)
       .order('submitted_at', { ascending: true });
 
