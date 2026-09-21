@@ -130,7 +130,7 @@ export default function TeacherCourse() {
         token_secret: tokenSecret,
         name: newSessionName.trim(),
       })
-      .select()
+      .select('id, name, starts_at, ends_at, created_at')
       .single();
 
     if (error || !data) {

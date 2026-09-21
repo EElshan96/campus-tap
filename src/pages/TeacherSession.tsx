@@ -40,7 +40,7 @@ export default function TeacherSession() {
     const fetchInfo = async () => {
       const { data: session } = await supabase
         .from('sessions')
-        .select('*, classes(name, id)')
+        .select('id, name, ends_at, classes(name, id)')
         .eq('id', sessionId)
         .single();
       if (session) {

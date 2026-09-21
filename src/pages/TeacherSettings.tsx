@@ -27,7 +27,7 @@ export default function TeacherSettings() {
     const fetch = async () => {
       const { data } = await supabase
         .from('teacher_settings')
-        .select('*')
+        .select('retention_days')
         .eq('teacher_id', user.id)
         .maybeSingle();
       if (data) {
